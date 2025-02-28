@@ -8,6 +8,8 @@ class Player
     // player's health
     private int health;
 
+    public int Health => health;
+
 
     // player loses some health...
     public void Damage(int amount)

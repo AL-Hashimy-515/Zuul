@@ -5,10 +5,11 @@ class Game
 	// Private fields
 	private Parser parser;
     private Player player;
-    //public Room currentRoom;
+    public Room currentRoom;
+    private Room winnigRoom;
 
-	// Constructor
-	public Game()
+    // Constructor
+    public Game()
 	{
 		parser = new Parser();
         player = new Player();
@@ -24,13 +25,17 @@ class Game
 		Room pub = new Room("in the campus pub");
 		Room lab = new Room("in a computing lab");
 		Room office = new Room("in the computing admin office");
+		Room up = new Room("upstairs");
+        Room down = new Room("downstairs");
 
-		// Initialise room exits
-		outside.AddExit("east", theatre);
+        // Initialise room exits
+        outside.AddExit("east", theatre);
 		outside.AddExit("south", lab);
 		outside.AddExit("west", pub);
+		outside.AddExit("up", up);
+		outside.AddExit("down", down);	
 
-		theatre.AddExit("west", outside);
+        theatre.AddExit("west", outside);
 
 		pub.AddExit("east", outside);
 
@@ -47,6 +52,7 @@ class Game
 		// Start game outside
 		currentRoom = outside;
         player.CurrentRoom = outside;
+		winnigRoom = office;
     }
 
 	//  Main play routine. Loops until end of play.
@@ -59,7 +65,13 @@ class Game
 		bool finished = false;
 		while (!finished)
 		{
-			Command command = parser.GetCommand();
+			if (!player.IsAlive())
+            {
+                Console.WriteLine("You have died. game Over");
+				finished = true;
+				continue;
+            }
+				Command command = parser.GetCommand();
 			finished = ProcessCommand(command);
 		}
 		Console.WriteLine("Thank you for playing.");
@@ -97,12 +109,16 @@ class Game
 				PrintHelp();
 				break;
 			case "go":
-				GoRoom(command);
+				player.Damage(10);
+                GoRoom(command);
 				break;
 			case "look":
 				PrintLook(command);
 				break;
-			case "quit":
+			case "status":
+				PrintStatus();
+                break;
+            case "quit":
 				wantToQuit = true;
 				break;
 		}
@@ -129,7 +145,7 @@ class Game
 	// room, otherwise print an error message.
 	private void GoRoom(Command command)
 	{
-		if(!command.HasSecondWord())
+        if (!command.HasSecondWord())
 		{
 			// if there is no second word, we don't know where to go...
 			Console.WriteLine("Go where?");
@@ -148,9 +164,16 @@ class Game
 
 		currentRoom = nextRoom;
 		Console.WriteLine(currentRoom.GetLongDescription());
-	}
 
-	private void PrintLook(Command command) 
+        if (currentRoom == winnigRoom)
+        {
+            Console.WriteLine("Congratulations! You have reached the office and won the game!");
+            Environment.Exit(0); // End the game
+        }
+    }
+
+
+    private void PrintLook(Command command) 
 	{
         //if (!command.HasSecondWord())
         //{
@@ -160,5 +183,9 @@ class Game
         //}
         //string verticalDirection = command.SecondWord;
         Console.WriteLine(currentRoom.GetLongDescription());
+    }
+    private void PrintStatus()
+    {
+        Console.WriteLine($"Player health: {player.Health}");
     }
 }
