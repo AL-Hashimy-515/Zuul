@@ -14,8 +14,9 @@ class Player
     // player loses some health...
     public void Damage(int amount)
     {
+       //health -= amount;
        health -= amount;
-       if (health < 0)
+        if (health < 0)
        {
            health = 0;
        }

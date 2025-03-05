@@ -35,6 +35,9 @@ class Game
 		outside.AddExit("up", up);
 		outside.AddExit("down", down);	
 
+		up.AddExit("down", outside);
+		down.AddExit("up", outside);
+
         theatre.AddExit("west", outside);
 
 		pub.AddExit("east", outside);
@@ -44,13 +47,13 @@ class Game
 
 		office.AddExit("west", lab);
 
-		// Create your Items here
-		// ...
-		// And add them to the Rooms
-		// ...
+        // Create your Items here
+        Item bistool = new Item(5, "A bistool is a chair with a backrest, and sometimes armrests", "Bistool");
+        // And add them to the Rooms
+        lab.AddItem(bistool);
+        // Start game outside
 
-		// Start game outside
-		currentRoom = outside;
+        currentRoom = outside;
         player.CurrentRoom = outside;
 		winnigRoom = office;
     }
@@ -175,14 +178,19 @@ class Game
 
     private void PrintLook(Command command) 
 	{
-        //if (!command.HasSecondWord())
-        //{
-        //	// if there is no second word, we don't know where to go...
-        //	Console.WriteLine("Look where?");
-        //	return;
-        //}
-        //string verticalDirection = command.SecondWord;
-        Console.WriteLine(currentRoom.GetLongDescription());
+        List<Item> itemsInRoom = currentRoom.GetItems();
+        if (itemsInRoom.Count > 0)
+        {
+            Console.WriteLine("You see the following items:");
+            foreach (Item item in itemsInRoom)
+            {
+                Console.WriteLine($"- {item.Name}: {item.Description}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("There are no items in this room.");
+        }
     }
     private void PrintStatus()
     {
