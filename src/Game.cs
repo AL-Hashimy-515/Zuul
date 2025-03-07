@@ -5,7 +5,6 @@ class Game
 	// Private fields
 	private Parser parser;
     private Player player;
-    public Room currentRoom;
     private Room winnigRoom;
 
     // Constructor
@@ -48,12 +47,12 @@ class Game
 		office.AddExit("west", lab);
 
         // Create your Items here
-        Item bistool = new Item(5, "A bistool is a chair with a backrest, and sometimes armrests", "Bistool");
+        Item bistool = new Item(3, "A bistool is a chair with a backrest, and sometimes armrests", "bistool");
         // And add them to the Rooms
         lab.AddItem(bistool);
+
         // Start game outside
 
-        currentRoom = outside;
         player.CurrentRoom = outside;
 		winnigRoom = office;
     }
@@ -90,7 +89,7 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
-		Console.WriteLine(currentRoom.GetLongDescription());
+		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
 
 	// Given a command, process (that is: execute) the command.
@@ -120,6 +119,12 @@ class Game
 				break;
 			case "status":
 				PrintStatus();
+                break;
+            case "take":
+                Take(command);
+                break;
+            case "drop":
+                Drop(command);
                 break;
             case "quit":
 				wantToQuit = true;
@@ -158,17 +163,17 @@ class Game
 		string direction = command.SecondWord;
 
 		// Try to go to the next room.
-		Room nextRoom = currentRoom.GetExit(direction);
+		Room nextRoom = player.CurrentRoom.GetExit(direction);
 		if (nextRoom == null)
 		{
 			Console.WriteLine("There is no door to "+direction+"!");
 			return;
 		}
 
-		currentRoom = nextRoom;
-		Console.WriteLine(currentRoom.GetLongDescription());
+		player.CurrentRoom = nextRoom;
+		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 
-        if (currentRoom == winnigRoom)
+        if (player.CurrentRoom == winnigRoom)
         {
             Console.WriteLine("Congratulations! You have reached the office and won the game!");
             Environment.Exit(0); // End the game
@@ -178,7 +183,7 @@ class Game
 
     private void PrintLook(Command command) 
 	{
-        List<Item> itemsInRoom = currentRoom.GetItems();
+        List<Item> itemsInRoom = player.CurrentRoom.GetItems();
         if (itemsInRoom.Count > 0)
         {
             Console.WriteLine("You see the following items:");
@@ -195,5 +200,40 @@ class Game
     private void PrintStatus()
     {
         Console.WriteLine($"Player health: {player.Health}");
+        Console.WriteLine(player.ShowInventory());
+    }
+
+    // Implement the Take and Drop commands
+    private void Take(Command command)
+    {
+        if (!command.HasSecondWord())
+        {
+            Console.WriteLine("Take what?");
+            return;
+        }
+
+        string itemName = command.SecondWord;
+
+        if (player.TakeFromChest(itemName))
+        {
+            Console.WriteLine($"You have taken the {itemName}.");
+        }
+        else
+        {
+            Console.WriteLine($"You could not take the {itemName}.");
+        }
+
+    }
+	private void Drop(Command command)
+	{
+        if (!command.HasSecondWord())
+        {
+            Console.WriteLine("Drop what?");
+            return;
+        }
+
+        string itemName = command.SecondWord;
+
+		player.DropToChest(itemName);        
     }
 }

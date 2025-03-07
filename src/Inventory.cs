@@ -1,6 +1,7 @@
 class Inventory{
     // fields
     private int maxWeight;
+
     private Dictionary<string, Item> items;
 
     // constructor
@@ -24,6 +25,7 @@ class Inventory{
     {
         return maxWeight - TotalWeight();
     }
+
     public bool Put(string itemName, Item item)
     {
         if (item.Weight + TotalWeight() <= maxWeight)
@@ -33,6 +35,7 @@ class Inventory{
         }
         return false;
     }
+
     public Item Get(string itemName){
         if (items.TryGetValue(itemName, out Item item))
         {
@@ -40,5 +43,20 @@ class Inventory{
             return item;
         }
         return null;
+    }
+    public string Show()
+    {
+        if (items.Count == 0)
+        {
+            return "The inventory is empty.";
+        }
+
+        var itemList = new List<string>();
+        foreach (var item in items.Values)
+        {
+            itemList.Add($"{item.Name}: {item.Description}");
+        }
+
+        return "Inventory:\n" + string.Join("\n", itemList);
     }
 }
