@@ -49,12 +49,15 @@ class Game
 
 		// Create your Items here
 		Item healer = new Item(3, "A healer gives you the heal that's you losen when you are visiting the rooms", "healer");
-		// And add them to the Rooms
-		lab.AddItem(healer);
+		Item Mo = new Item(3, "Mo is a friend", "Mo");
+        // And add them to the Rooms
+        lab.AddItem(healer);
+		outside.AddItem(Mo);
 
-		// Start game outside
 
-		player.CurrentRoom = outside;
+        // Start game outside
+
+        player.CurrentRoom = outside;
 		winnigRoom = office;
 	}
 
@@ -164,7 +167,8 @@ class Game
 	// room, otherwise print an error message.
 	private void GoRoom(Command command)
 	{
-		if (!command.HasSecondWord())
+  
+        if (!command.HasSecondWord())
 		{
 			// if there is no second word, we don't know where to go...
 			Console.WriteLine("Go where?");
