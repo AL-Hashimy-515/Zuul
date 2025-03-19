@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection.Metadata;
 
 class Game
@@ -7,58 +8,87 @@ class Game
 	private Parser parser;
 	private Player player;
 	private Room winnigRoom;
+	private Room KeyRoom;
+    private Stopwatch stopwatch;
 
-	// Constructor
-	public Game()
+
+    // Constructor
+    public Game()
 	{
 		parser = new Parser();
 		player = new Player();
-		CreateRooms();
-	}
+        stopwatch = new Stopwatch();
+        CreateRooms();
+    }
 
 	// Initialise the Rooms (and the Items)
 	private void CreateRooms()
 	{
 		// Create the rooms
-		Room outside = new Room("outside the main entrance of the university");
-		Room theatre = new Room("in a lecture theatre");
-		Room pub = new Room("in the campus pub");
-		Room lab = new Room("in a computing lab");
-		Room office = new Room("in the computing admin office");
-		Room up = new Room("upstairs");
-		Room down = new Room("downstairs");
 
-		// Initialise room exits
-		outside.AddExit("east", theatre);
-		outside.AddExit("south", lab);
-		outside.AddExit("west", pub);
-		outside.AddExit("up", up);
-		outside.AddExit("down", down);
+		Room entrance = new Room("in the entrance of the building");
+		Room elevator = new Room("floor one in the elevator");
+		Room counter = new Room("in the counter of the building");
+		Room garage = new Room("in the garage of the building");
+		Room electrecal = new Room("in the electrecal room of the building");
 
-		up.AddExit("down", outside);
-		down.AddExit("up", outside);
+        Room elevator_2 = new Room("floor two in the elevator");
+		Room entrance_2 = new Room("floor two in the entrance of the building");
+		Room car_wash = new Room("in the car wash of the building");
+		Room exhibition = new Room("in the exhibition of the building");
+		Room maintenance = new Room("in the maintenance of the building");
 
-		theatre.AddExit("west", outside);
+        Room elevator_3 = new Room("you are on the roof");
+		Room helicopter = new Room("in the helicopter");
 
-		pub.AddExit("east", outside);
 
-		lab.AddExit("north", outside);
-		lab.AddExit("east", office);
+        //floor one
+        elevator.AddExit("east", entrance);
+		entrance.AddExit("west", elevator);
 
-		office.AddExit("west", lab);
+        entrance.AddExit("east", counter);
+		counter.AddExit("west", entrance);
+
+        entrance.AddExit("north", garage);
+		garage.AddExit("south", entrance);
+
+        entrance.AddExit("south", electrecal);
+        electrecal.AddExit("north", entrance);
+
+        //floor two
+        elevator.AddExit("up", elevator_2);
+        elevator_2.AddExit("down", elevator);
+
+        elevator_2.AddExit("east", entrance_2);
+		entrance_2.AddExit("west", elevator_2);
+
+        entrance_2.AddExit("north", car_wash);
+        car_wash.AddExit("south", entrance_2);
+
+        entrance_2.AddExit("south", exhibition);
+        exhibition.AddExit("north", entrance_2);
+
+        entrance_2.AddExit("east", maintenance);
+        maintenance.AddExit("west", entrance_2);
+
+
+        elevator_2.AddExit("up", elevator_3);
+        elevator_3.AddExit("down", elevator_2);
+
+        elevator_3.AddExit("east", helicopter);
 
 		// Create your Items here
 		Item healer = new Item(3, "A healer gives you the heal that's you losen when you are visiting the rooms", "healer");
-		Item Mo = new Item(3, "Mo is a friend", "Mo");
+        Item key = new Item(1, "A key to open the helicopter door", "key");
         // And add them to the Rooms
-        lab.AddItem(healer);
-		outside.AddItem(Mo);
+        elevator.AddItem(healer);
+		elevator_3.AddItem(key);
 
+		// Start game outside
 
-        // Start game outside
-
-        player.CurrentRoom = outside;
-		winnigRoom = office;
+		KeyRoom = elevator_3;
+        player.CurrentRoom = entrance;
+		winnigRoom = helicopter;
 	}
 
 	//  Main play routine. Loops until end of play.
@@ -75,7 +105,7 @@ class Game
 			{
 				Console.WriteLine("You have died. game Over");
 				finished = true;
-				continue;
+				return;
 			}
 
 			if (player.CurrentRoom == winnigRoom)
@@ -85,7 +115,9 @@ class Game
 				finished = true;
 				continue;
 			}
-			Command command = parser.GetCommand();
+
+            stopwatch.Start();
+            Command command = parser.GetCommand();
 			finished = ProcessCommand(command);
 		}
 		Console.WriteLine("Thank you for playing.");
@@ -148,9 +180,6 @@ class Game
 		return wantToQuit;
 	}
 
-	// ######################################
-	// implementations of user commands:
-	// ######################################
 
 	// Print out some help information.
 	// Here we print the mission and a list of the command words.
@@ -167,7 +196,18 @@ class Game
 	// room, otherwise print an error message.
 	private void GoRoom(Command command)
 	{
-  
+		
+
+            if (stopwatch.ElapsedMilliseconds >= 10000)
+        {
+            player.Damage(10);
+            Console.WriteLine("You have taken 10 damage for staying in the same room for too long.");
+
+		}
+		Console.WriteLine(stopwatch.ElapsedMilliseconds /10 );
+           stopwatch.Restart(); // Restart the stopwatch
+
+
         if (!command.HasSecondWord())
 		{
 			// if there is no second word, we don't know where to go...
@@ -188,12 +228,13 @@ class Game
         player.CurrentRoom = nextRoom;
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 
-		if (player.CurrentRoom == winnigRoom)
-		{
-			//Console.WriteLine("Congratulations! You have reached the office and won the game!");
-			//Environment.Exit(0); // End the game
-		}
-	}
+        if (nextRoom == winnigRoom && !player.HasItem("key"))
+        {
+            Console.WriteLine("You need a key to enter the helicopter!");
+            player.CurrentRoom = KeyRoom;
+            return;
+        }
+    }
 
 
 	private void PrintLook(Command command)

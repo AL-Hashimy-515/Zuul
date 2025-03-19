@@ -21,11 +21,11 @@ class Player
     public void Damage(int amount)
     {
        //health -= amount;
-       health -= amount;
+        health -= amount;
         if (health < 0)
-       {
-           health = 0;
-       }
+        {
+            health = 0;
+        }
     }
     // player's health restores...
     public void Heal(int amount)
@@ -49,6 +49,10 @@ class Player
         health = 100;
         // 25kg is pretty heavy to carry around all day
         backpack = new Inventory(25); 
+    }
+    public bool HasItem(string itemName)
+    {
+        return backpack.Get(itemName) != null;
     }
 
     public bool TakeFromChest(string itemName)
